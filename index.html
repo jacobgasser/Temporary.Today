@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Temporary.Today</title>
+    <link href="https://fonts.googleapis.com/css?family=Patua+One" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #ff9e0d;
+            color: white;
+            height: 9vh;
+            width: 100%;
+            font-size: 7vh;
+            padding: 1vh 1vw 1vh 1vw;
+            font-family: 'Patua One', cursive;
+            margin-bottom: 20vh;
+            display: block;
+        }
+        form {
+            text-align: center;
+        }
+
+        input {
+            border: 0.1px solid rgba(51, 51, 51, 0.3);
+            color: rgba(51, 51, 51, 0.8);
+            font-size: 10vh;
+            padding: 1vh 2vw 1vh 2vw;
+        }
+        input:hover {
+            border: 0.1px solid #ff9e0d;
+            color: rgba(0, 0, 0, 1);
+        }
+        input:focus {
+            outline: none;
+        }
+    </style>
+  </head>
+  <body>
+      <header>Temporary.Today</header>
+    <form id="form1">
+      <input id="name" autocomplete="off" placeholder="name"/><button>Test</button>
+      <div id="avail">available</div>
+    </form>
+    <!-- <img src="./REBA.png" /> -->
+    <form id="form2">
+      <input id="link" autocomplete="off" placeholder="link" /><button>
+        Add
+      </button>
+    </form>
+    <button id="get">Update Listing</button>
+
+    </div>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      var avail = document.querySelector("#avail");
+      avail.style.opacity = "0";
+      $(function() {
+        var ws = new WebSocket("ws://localhost:3000");
+        $("#form1").submit(function(e) {
+          e.preventDefault();
+          ws.send("--test " + $("#name").val());
+          return false;
+        });
+        $("#form2").submit(function(e) {
+          e.preventDefault();
+          ws.send("--add " + $("#name").val() + " " + $("#link").val());
+          return false;
+        });
+        ws.onmessage = function(data) {
+          if (data.data.toString().startsWith("-suc ")) {
+            if (data.data.toString() === "-suc avail") {
+              Whenavailable(true);
+            }
+          }
+          if (data.data.toString().startsWith("-error ")) {
+            Whenavailable(false);
+          }
+          console.debug(data.data);
+        };
+        $("#get").click(function() {
+          ws.send("-get");
+        });
+        $("input").blur(function() {
+            ws.send("--test " + $("#name").val())
+        })
+      });
+
+      function Whenavailable(isIt) {
+        if (isIt) {
+          avail.style.opacity = 1;
+          avail.style.color = "green";
+        }
+        if (!isIt) {
+          avail.style.opacity = 1;
+          avail.style.color = "red";
+        }
+      }
+    </script>
+  </body>
+</html>
