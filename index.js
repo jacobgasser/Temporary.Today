@@ -8,6 +8,10 @@ var list = {
 var linkedList = {
   list: [{ temp: "http://google.com" }]
 };
+var wsaddress = "ws://159.65.185.219:3000";
+if (process.argv.length > 0) {
+  wsaddress = "ws://localhost:3000";
+}
 http
   .createServer(function(req, res) {
     var q = url.parse(req.url, true);
@@ -56,7 +60,6 @@ server.on("connection", function(ws) {
         ws.send("-error TAKEN");
         return;
       }
-      //addToList(id[1]);
       ws.send("-suc avail");
     }
     if (msg.toString() == "-get") {
@@ -74,9 +77,27 @@ server.on("connection", function(ws) {
         return;
       }
       addToList(addmsg[1], addmsg[2]);
+      let day = 86400000;
+      setTimeout(remove, day, addmsg[1]);
     }
   });
 });
+
+function remove(name) {
+  console.log("at the remove place");
+  for (var i = 0; i < linkedList.list.length; i++) {
+    for (key in linkedList.list[i]) {
+      if (key === name) {
+        linkedList.list.splice(i, 1);
+        for (var i = 0; i < list.list.length; i++) {
+          if (list.list[i] === name) {
+            list.list.splice(i, 1);
+          }
+        }
+      }
+    }
+  }
+}
 
 function doesExist(name) {
   var cancel = false;
