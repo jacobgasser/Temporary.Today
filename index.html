@@ -95,17 +95,13 @@
         placeholder="name"
         title="The name of the link, http://tempory.today/<your name here>"
       />
-      <span class="questionMark">?</span>
     </form>
-    <!-- <img src="./REBA.png" /> -->
     <form id="form2">
-      <input id="link" autocomplete="off" placeholder="link" /><span
-        class="questionMark"
-        >?</span
-      >
+      <input id="link" autocomplete="off" placeholder="link" />
 
       <button>Add</button>
     </form>
+	<a id="linkTo" href=""></a>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
       var avail = document.querySelector("#name");
@@ -122,6 +118,7 @@
         $("#form2").submit(function(e) {
           e.preventDefault();
           ws.send("--add " + $("#name").val() + " " + $("#link").val());
+		  
           return false;
         });
         ws.onmessage = function(data) {
@@ -129,6 +126,10 @@
             if (data.data.toString() === "-suc avail") {
               Whenavailable(true);
             }
+			if(data.data.toString() === "-suc added") {
+			document.getElementById("linkTo").href="http://159.65.185.219/" + avail.value;
+			document.getElementById("linkTo").innerHTML = "http://159.65.185.219/" + avail.value;
+			}
           }
           if (data.data.toString().startsWith("-error ")) {
             Whenavailable(false);

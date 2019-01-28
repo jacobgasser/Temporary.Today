@@ -12,26 +12,25 @@ var wsaddress = "ws://159.65.185.219:3000";
 if (process.argv.length > 0) {
   wsaddress = "ws://localhost:3000";
 }
-http
-  .createServer(function(req, res) {
-    var q = url.parse(req.url, true);
-    var filename = "." + q.pathname;
-    if (!q.pathname.includes(".")) {
-      var actual = q.pathname.substr(1);
-      if (!doesExist(actual)) {
-        res.writeHead(404, { "Content-Type": "text/html" });
-        return res.end("404404404 Not Found");
-      }
-      res.writeHead(302, { Location: getLink(actual) });
-      return res.end("Check Console ;)");
-    }
-    fs.readFile(filename, function(err, data) {
+
+function scan(nameOfFile, res, q) {
+	fs.readFile(nameOfFile, function(err, data) {
       if (err) {
         res.writeHead(404, { "Content-Type": "text/html" });
         return res.end("404 Not Found");
       }
-
-      if (filename === "./REBA.png") {
+	  
+		if (q.pathname.toString().endsWith(".js")) {
+			res.writeHead(200, { "Content-Type": "text/javascript" });
+			res.write(data);
+			return res.end();
+      }
+	  if (q.pathname.toString().endsWith(".css")) {
+        res.writeHead(200, { "Content-Type": "text/css" });
+        res.write(data);
+        return res.end();
+      }
+      if (q.pathname.toString().endsWith(".png")) {
         res.writeHead(200, { "Content-Type": "image/png" });
         res.write(data);
         return res.end();
@@ -40,6 +39,35 @@ http
       //res.write(data);
       return res.end(data);
     });
+	
+}
+
+
+http
+  .createServer(function(req, res) {
+    var q = url.parse(req.url, true);
+    var filename = "." + q.pathname;
+	if(filename == "./") {
+		  scan("./index.html", res, q);
+		  return;
+	  }
+    if (!q.pathname.includes(".")) {
+      var actual = q.pathname.substr(1);
+      if (!doesExist(actual)) {
+        res.writeHead(404, { "Content-Type": "text/html" });
+        return res.end("404 Not Found");
+      }
+      res.writeHead(302, { Location: getLink(actual) });
+      return res.end("Redirecting...");
+	  
+    }
+	if(q.pathname.toString().indexOf("../..") > -1) {
+		res.writeHead(403, {"Content-Type": "text/html"});
+		return res.end("403 Forbidden");
+	}
+	scan(filename, res, q);
+	
+    
   })
   .listen(80);
 
@@ -77,14 +105,14 @@ server.on("connection", function(ws) {
         return;
       }
       addToList(addmsg[1], addmsg[2]);
-      let day = 86400000;
-      setTimeout(remove, day, addmsg[1]);
+      let week = 604800000;
+      setTimeout(remove, week, addmsg[1]);
+	  ws.send("-suc added");
     }
   });
 });
 
 function remove(name) {
-  console.log("at the remove place");
   for (var i = 0; i < linkedList.list.length; i++) {
     for (key in linkedList.list[i]) {
       if (key === name) {
